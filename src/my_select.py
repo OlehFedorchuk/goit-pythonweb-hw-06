@@ -1,23 +1,35 @@
-from sqlalchemy import func, desc, and_
+from sqlalchemy import create_engine, func, desc, and_
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
-
-from models import Group, Student, Teacher, Subject, Grade
-
 from tabulate import tabulate
+from config import DATABASE_URL
+from models import Group, Student, Teacher, Subject, Grade
+from db import engine
 
-DATABASE_URL = "postgresql+psycopg://Admin:Password@localhost:5432/university_db"
-
-engine = create_engine(DATABASE_URL, echo=False)
 Session = sessionmaker(bind=engine)
 
 
+def print_table(title, data, headers):
+    print(f"\n{title}")
+    if not data:
+        print("No data found")
+        return
+
+    rows = []
+    for row in data:
+        if hasattr(row, "_mapping"):
+            rows.append(list(row._mapping.values()))
+        else:
+            rows.append(list(row))
+
+    print(tabulate(rows, headers=headers, tablefmt="grid"))
+
+
 def select_1():
-    """
-    Знайти 5 студентів із найбільшим середнім балом з усіх предметів.
-    """
+    
+    # Find the top 5 students with the highest average grade across all subjects.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.id,
                 Student.name,
@@ -29,15 +41,14 @@ def select_1():
             .limit(5)
             .all()
         )
-        return result
 
 
 def select_2(subject_id: int):
-    """
-    Знайти студента із найвищим середнім балом з певного предмета.
-    """
+    
+    # Find the student with the highest average grade in a specific subject.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.id,
                 Student.name,
@@ -51,15 +62,14 @@ def select_2(subject_id: int):
             .order_by(desc("average_grade"))
             .first()
         )
-        return result
 
 
 def select_3(subject_id: int):
-    """
-    Знайти середній бал у групах з певного предмета.
-    """
+    
+    # Find the average grade in each group for a specific subject.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Group.id,
                 Group.name,
@@ -74,30 +84,28 @@ def select_3(subject_id: int):
             .order_by(Group.name)
             .all()
         )
-        return result
 
 
 def select_4():
-    """
-    Знайти середній бал на потоці (по всій таблиці оцінок).
-    """
+    
+    # Find the average grade across the entire stream (all grades in the table).
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 func.round(func.avg(Grade.grade), 2).label("average_grade")
             )
             .select_from(Grade)
             .scalar()
         )
-        return result
 
 
 def select_5(teacher_id: int):
-    """
-    Знайти які курси читає певний викладач.
-    """
+    
+    # Find the courses taught by a specific teacher.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Teacher.name.label("teacher"),
                 Subject.id,
@@ -108,15 +116,14 @@ def select_5(teacher_id: int):
             .order_by(Subject.name)
             .all()
         )
-        return result
 
 
 def select_6(group_id: int):
-    """
-    Знайти список студентів у певній групі.
-    """
+    
+    # Find the list of students in a specific group.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.id,
                 Student.name,
@@ -127,15 +134,14 @@ def select_6(group_id: int):
             .order_by(Student.name)
             .all()
         )
-        return result
 
 
 def select_7(group_id: int, subject_id: int):
-    """
-    Знайти оцінки студентів у окремій групі з певного предмета.
-    """
+    
+    # Find the grades of students in a specific group for a specific subject.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.name.label("student"),
                 Group.name.label("group_name"),
@@ -155,15 +161,14 @@ def select_7(group_id: int, subject_id: int):
             .order_by(Student.name, Grade.grade_date)
             .all()
         )
-        return result
 
 
 def select_8(teacher_id: int):
-    """
-    Знайти середній бал, який ставить певний викладач зі своїх предметів.
-    """
+    
+    # Find the average grade given by a specific teacher across their subjects.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Teacher.name.label("teacher"),
                 func.round(func.avg(Grade.grade), 2).label("average_grade"),
@@ -174,15 +179,14 @@ def select_8(teacher_id: int):
             .group_by(Teacher.name)
             .first()
         )
-        return result
 
 
 def select_9(student_id: int):
-    """
-    Знайти список курсів, які відвідує певний студент.
-    """
+    
+    # Find the list of courses attended by a specific student.
+    
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.name.label("student"),
                 Subject.id,
@@ -195,15 +199,15 @@ def select_9(student_id: int):
             .order_by(Subject.name)
             .all()
         )
-        return result
 
 
 def select_10(student_id: int, teacher_id: int):
-    """
-    Список курсів, які певному студенту читає певний викладач.
-    """
+    
+    # Find the list of courses taught by a specific teacher to a specific student.
+    
+
     with Session() as session:
-        result = (
+        return (
             session.query(
                 Student.name.label("student"),
                 Teacher.name.label("teacher"),
@@ -223,21 +227,76 @@ def select_10(student_id: int, teacher_id: int):
             .order_by(Subject.name)
             .all()
         )
-        return result
-def print_table(title, data, headers):
-    print(f"\n{title}")
-    if not data:
-        print("No data found")
-        return
 
-    rows = []
-    for row in data:
-        if hasattr(row, "_mapping"):
-            rows.append(list(row._mapping.values()))
-        else:
-            rows.append(list(row))
 
-    print(tabulate(rows, headers=headers, tablefmt="grid"))
+def select_11(student_id: int, teacher_id: int):
+    
+    # Find the average grade that a specific teacher gives to a specific student.
+    
+    with Session() as session:
+        return (
+            session.query(
+                Student.name.label("student"),
+                Teacher.name.label("teacher"),
+                func.round(func.avg(Grade.grade), 2).label("average_grade"),
+            )
+            .join(Grade, Grade.student_id == Student.id)
+            .join(Subject, Subject.id == Grade.subject_id)
+            .join(Teacher, Teacher.id == Subject.teacher_id)
+            .filter(
+                and_(
+                    Student.id == student_id,
+                    Teacher.id == teacher_id,
+                )
+            )
+            .group_by(Student.name, Teacher.name)
+            .first()
+        )
+
+
+def select_12(group_id: int, subject_id: int):
+    
+    # Find the grades of students in a specific group for a specific subject at the last lesson.
+    
+    with Session() as session:
+        last_lesson_date = (
+            session.query(func.max(Grade.grade_date))
+            .select_from(Grade)
+            .join(Student, Student.id == Grade.student_id)
+            .filter(
+                and_(
+                    Student.group_id == group_id,
+                    Grade.subject_id == subject_id,
+                )
+            )
+            .scalar()
+        )
+
+        if not last_lesson_date:
+            return []
+
+        return (
+            session.query(
+                Group.name.label("group_name"),
+                Subject.name.label("subject"),
+                Student.name.label("student"),
+                Grade.grade,
+                Grade.grade_date,
+            )
+            .join(Student, Student.id == Grade.student_id)
+            .join(Group, Group.id == Student.group_id)
+            .join(Subject, Subject.id == Grade.subject_id)
+            .filter(
+                and_(
+                    Group.id == group_id,
+                    Subject.id == subject_id,
+                    Grade.grade_date == last_lesson_date,
+                )
+            )
+            .order_by(Student.name)
+            .all()
+        )
+
 
 if __name__ == "__main__":
     print_table(
@@ -259,8 +318,7 @@ if __name__ == "__main__":
         ["Group ID", "Group", "Subject", "Average grade"],
     )
 
-    result_4 = select_4()
-    print(f"\nAverage grade for all grades: {result_4}")
+    print(f"\nAverage grade for all grades: {select_4()}")
 
     print_table(
         "Courses taught by teacher",
@@ -297,4 +355,17 @@ if __name__ == "__main__":
         "Courses taught to student by teacher",
         select_10(1, 1),
         ["Student", "Teacher", "Subject ID", "Subject"],
+    )
+
+    result_11 = select_11(1, 1)
+    print_table(
+        "Average grade given by teacher to student",
+        [result_11] if result_11 else [],
+        ["Student", "Teacher", "Average grade"],
+    )
+
+    print_table(
+        "Grades at the last lesson",
+        select_12(1, 1),
+        ["Group", "Subject", "Student", "Grade", "Date"],
     )

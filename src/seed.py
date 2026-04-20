@@ -1,7 +1,6 @@
 from random import randint, choice, sample
 from datetime import date, timedelta
 from faker import Faker
-
 from db import engine, SessionLocal
 from models import Base, Group, Student, Teacher, Subject, Grade
 
