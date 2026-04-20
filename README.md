@@ -1,5 +1,3 @@
-# goit-pythonweb-hw-06
-
 Homework assignment on **SQLAlchemy ORM + PostgreSQL**.
 
 ## Description
