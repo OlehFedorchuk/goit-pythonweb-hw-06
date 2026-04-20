@@ -54,17 +54,17 @@ poetry install
 - Seed the database:
 
 ```bash
-python seed.py
+poetry run src/python seed.py
 ```
 
 - Run the queries:
 
 ```bash
-python my_select.py
+poetry run src/python my_select.py
 ```
 
 - Run the interactive menu:
 
 ```bash
-python main.py --menu
+poetry run src/python main.py --menu
 ```

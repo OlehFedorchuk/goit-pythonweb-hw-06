@@ -87,3 +87,5 @@ def seed_database():
     finally:
         session.close()
 
+if __name__ == "__main__":
+    seed_database()
